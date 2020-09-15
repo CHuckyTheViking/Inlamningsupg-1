@@ -14,12 +14,6 @@ using Newtonsoft.Json;
 namespace WeatherStation
 {
 
-
-    //public class Rootobject
-    //{
-    //    public WeatherData[] Property1 { get; set; }
-    //}
-
     public class WeatherData
     {
         public DateTime DateTime { get; set; }
@@ -96,7 +90,7 @@ namespace WeatherStation
                 }
 
                 Random random = new Random();
-                int minutes = random.Next(20,60);
+                int minutes = random.Next(20,40);
 
                 await Task.Delay(minutes * 60000, stoppingToken);
             }

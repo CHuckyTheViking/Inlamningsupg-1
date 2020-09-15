@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,12 +13,12 @@ using Newtonsoft.Json;
 
 namespace WeatherStation
 {
-  
 
-    public class Rootobject
-    {
-        public WeatherData[] Property1 { get; set; }
-    }
+
+    //public class Rootobject
+    //{
+    //    public WeatherData[] Property1 { get; set; }
+    //}
 
     public class WeatherData
     {
@@ -39,11 +40,7 @@ namespace WeatherStation
         public string Unit { get; set; }
         public int UnitType { get; set; }
     }
-
-    
-
-
-
+ 
 
     public class Worker : BackgroundService
     {
@@ -80,14 +77,15 @@ namespace WeatherStation
                 try
                 {
                     string _result = await _client.GetStringAsync(_url);
-                    List<WeatherData> weather =  JsonConvert.DeserializeObject<List<WeatherData>>(_result);
+                    List<WeatherData> weather = JsonConvert.DeserializeObject<List<WeatherData>>(_result);
+
                     foreach (WeatherData v in weather)
                     {
                         _logger.LogInformation($"The weather in Köping is {v.Temperature.Value}{v.Temperature.Unit} and {v.IconPhrase}");
                         if (v.Temperature.Value > 30)
                             _logger.LogInformation("It's really hot outside, so no need for a jacket");
                         if (v.Temperature.Value < 10)
-                            _logger.LogInformation("It's getting cold outside, so grab the jacket");
+                            _logger.LogInformation("It's getting cold outside, so grab a jacket");
 
                     }
 

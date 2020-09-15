@@ -100,7 +100,7 @@ namespace WeatherStation
                 Random random = new Random();
                 int minutes = random.Next(20,60);
 
-                await Task.Delay(minutes * 1000, stoppingToken);
+                await Task.Delay(minutes * 60000, stoppingToken);
             }
         }
     }

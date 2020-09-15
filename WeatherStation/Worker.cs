@@ -10,38 +10,19 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using WeatherStation.Models;
 
 namespace WeatherStation
 {
 
-    public class WeatherData
-    {
-        public DateTime DateTime { get; set; }
-        public int EpochDateTime { get; set; }
-        public int WeatherIcon { get; set; }
-        public string IconPhrase { get; set; }
-        public bool HasPrecipitation { get; set; }
-        public bool IsDaylight { get; set; }
-        public Temperature Temperature { get; set; }
-        public int PrecipitationProbability { get; set; }
-        public string MobileLink { get; set; }
-        public string Link { get; set; }
-    }
-
-    public class Temperature
-    {
-        public float Value { get; set; }
-        public string Unit { get; set; }
-        public int UnitType { get; set; }
-    }
- 
-
     public class Worker : BackgroundService
     {
+      
         private readonly ILogger<Worker> _logger;
-        private readonly string _url = "http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/311006?apikey=nD05B05OOKhWwYDyEg5LDbibbALIeQRR&language=en-us&details=false&metric=true";
+        private readonly string _url = "http://api.weatherstack.com/current?access_key=e699857f79960f12fc50911e6203d374&query=Koping";
 
         private HttpClient _client;
+        Random random = new Random();
 
         public Worker(ILogger<Worker> logger)
         {
@@ -70,26 +51,30 @@ namespace WeatherStation
             {
                 try
                 {
-                    string _result = await _client.GetStringAsync(_url);
-                    List<WeatherData> weather = JsonConvert.DeserializeObject<List<WeatherData>>(_result);
-
-                    foreach (WeatherData v in weather)
+                    var response = await _client.GetAsync(_url);
+                    if (response.IsSuccessStatusCode)
                     {
-                        _logger.LogInformation($"The weather in Köping is {v.Temperature.Value}{v.Temperature.Unit} and {v.IconPhrase}");
-                        if (v.Temperature.Value > 30)
-                            _logger.LogInformation("It's really hot outside, so no need for a jacket");
-                        if (v.Temperature.Value < 10)
-                            _logger.LogInformation("It's getting cold outside, so grab a jacket");
+                        WeatherData data = JsonConvert.DeserializeObject<WeatherData>(await response.Content.ReadAsStringAsync());
+                        _logger.LogInformation($"The weather in Köping is {data.current.temperature}C and was measured {data.current.observation_time}");
+                        if (data.current.temperature > 30)
+                        {
+                            _logger.LogInformation($"Leave your sweater at home, it's very warm today!");
+                        }
+                        if (data.current.temperature < 10)
+                        {
+                            _logger.LogInformation($"Ps, take a warm jacket, it's cold outside!");
+                        }
 
                     }
-
+                   
+                      
                 }
                 catch (Exception ex)
                 {
                     _logger.LogInformation($"The WeatherStation have hit a bump. Error: {ex.Message}");
                 }
 
-                Random random = new Random();
+                
                 int minutes = random.Next(20,40);
 
                 await Task.Delay(minutes * 60000, stoppingToken);
